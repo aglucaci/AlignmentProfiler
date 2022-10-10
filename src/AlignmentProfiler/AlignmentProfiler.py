@@ -52,6 +52,7 @@ import argparse
 import os
 import sys
 import pathlib 
+from tabulate import tabulate
 
 
 # =============================================================================
@@ -60,11 +61,26 @@ import pathlib
 
 parser = argparse.ArgumentParser(description='Process some integers.')
 
-parser.add_argument('--input', metavar='I', type=str,
+parser.add_argument('--input', metavar='I', type=str, required=True,
                     help='Input multiple sequence alignment')
+parser.add_argument('--output', metavar='O', type=str, required=False,
+                    help='Specify a location for the output csv')
+
 
 args = parser.parse_args()
 
+OutputDirectory = os.path.join("..", "..", "tables")
+
+if args.output == None:
+    #print([args.output])
+    OutputCSV = os.path.join(OutputDirectory, 
+                             os.path.basename(args.input) + "_output.csv")
+else:
+    OutputCSV = args.output
+#end if
+    
+#print(args.input)
+#print(OutputCSV)
 
 Universal_codon_table = {"Glycine": ["GGT", "GGC", "GGA", "GGG"], 
                          "Alanine": ["GCT", "GCC", "GCA", "GCG"],
@@ -87,6 +103,9 @@ Universal_codon_table = {"Glycine": ["GGT", "GGC", "GGA", "GGG"],
                          "Aspartate": ["GAT", "GAC"], 
                          "Glutamate": ["GAA", "GAG"],
                          "Stop":  ["TAA", "TAG", "TGA"]}
+
+
+ResultsDict = {}
 
 # =============================================================================
 # Classes
@@ -220,6 +239,50 @@ print("# The alignment has", _MSA.NumInvariantSites, "invariant sites", "(", (_M
 print("# The alignment has an average gappiness of", 0, "with a range of", 0, "to", 0)
 
 # Nucleotide Frequencies
+# https://www.promega.com/resources/guides/nucleic-acid-analysis/restriction-enzyme-resource/restriction-enzyme-resource-tables/iupac-ambiguity-codes-for-nucleotide-degeneracy/
+print("# The alignment the following nucleotide frequencies")
+print()
+print(tabulate([
+    ['Adenine (A)',  0], 
+    ['Thymine (T)',  0], 
+    ['Guanine (G)',  0], 
+    ['Cytosine (C)', 0]], 
+    headers=['Nucleotide', 'Frequency']))
+
+#GC Content
+print()
+print("# The alignment the following GC content (%):", 0)
+
+# Codon Frequencies
+print()
+print("# The alignment the following Codon frequencies")
+print()
+print(tabulate([
+    ['ATG',  0]
+    ], 
+    headers=['Codon', 'Frequency']))
+
+# Search for ambiguous nucleotides
+# Or ambiguous codons
+
+# Pairwise Hamming distance
+# Pairiwse p-distance
+# Pairwise p-distance with indels
+# Pairwise JC69 distance
+# RSCU
+# Pairwise KaKs
+
+# =============================================================================
+# Output CSV
+# =============================================================================
+
+df = pd.DataFrame.from_dict(ResultsDict, orient='index')
+print()
+print("# Saving results to:", OutputCSV)
+df.to_csv(OutputCSV, index=False)
+
+
+
 
 """
 # Summary stats
