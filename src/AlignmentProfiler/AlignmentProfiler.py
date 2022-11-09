@@ -124,7 +124,7 @@ class AlignmentProfiler(): # Loads in a fasta dictionary
     
     #self.records = self.process_sites(FASTA_FILE)
     #self.CodonTable = CodonTable
-    self.NumSites = self.Get_NumSites(_Alignment, File_Type)
+    self.NumCodonSites = self.Get_NumCodonSites(_Alignment, File_Type)
     self.NumSequences = self.Get_NumSequences(_Alignment, File_Type)
     #self.NumSequences = self.Get_NumSequences()
     #self.alignment_type = "DNA" # Default
@@ -132,12 +132,12 @@ class AlignmentProfiler(): # Loads in a fasta dictionary
     self.GapCharacter = "-"                    # Default
     self.DNA_Characters = ["T", "C", "G", "A"] # Default
     # Statistics
-    self.NumInvariantSites = self.Get_NumInvariantSites(_Alignment, File_Type)
+    self.NumInvariantCodonSites = self.Get_NumInvariantCodonSites(_Alignment, File_Type)
     self.Gappiness = {}
-    self.NTFrequencies = {}
+    self.NTFrequencies = self.Get_NTFrequencies(_Alignment, File_Type)
   #end method
 
-  def Get_NumSites(self, _Alignment, File_Type):
+  def Get_NumCodonSites(self, _Alignment, File_Type):
       sites = 0
       with open(_Alignment, "r") as handle:
           for record in SeqIO.parse(handle, File_Type):
@@ -163,13 +163,13 @@ class AlignmentProfiler(): # Loads in a fasta dictionary
       return sequences  
   #end method
   
-  def Get_NumInvariantSites(self, _Alignment, File_Type):
+  def Get_NumInvariantCodonSites(self, _Alignment, File_Type):
       InvariantSites = 0
       #VariableSites = 0
       #loop over every site
       #for i in range(0, self.NumSites):
       print("# Checking alignment for invariant sites")
-      for i in tqdm(range(self.NumSites)):
+      for i in tqdm(range(self.NumCodonSites)):
             #print("# Checking site:", i + 1)
             column_data = []
             Variable = False
@@ -200,8 +200,46 @@ class AlignmentProfiler(): # Loads in a fasta dictionary
       return InvariantSites
   #end method
   
-
-
+  def Get_NTFrequencies(self, _Alignment, File_Type):
+      count_A = 0
+      count_T = 0
+      count_C = 0
+      count_G = 0
+      count_N = 0
+      total_num_nt = (self.NumCodonSites * 3) * self.NumSequences
+      print("# Checking NT Frequencies")
+      # Loop over sequences
+      with open(_Alignment, "r") as handle:
+          for record in tqdm(SeqIO.parse(handle, File_Type)):
+              #print(record.id)
+              for nt in str(record.seq):
+                  if nt.upper() == "A": 
+                      count_A += 1
+                  if nt.upper() == "T": 
+                      count_T += 1
+                  if nt.upper() == "C": 
+                      count_C += 1
+                  if nt.upper() == "G": 
+                      count_G += 1
+                  if nt.upper() == "N": 
+                      count_N += 1
+                  #total_num_nt += 1
+            #end for
+          #end for
+      #end with
+      pi_A = count_A / total_num_nt
+      pi_T = count_T / total_num_nt
+      pi_C = count_C / total_num_nt
+      pi_G = count_G / total_num_nt
+      pi_N = count_N / total_num_nt
+      return {"NucleotideFrequencies": {"A": pi_A,
+                                        "T": pi_T,
+                                        "G": pi_G,
+                                        "C": pi_C,
+                                        "N": pi_N
+                                        }
+              }
+     
 #end class
 
 # =============================================================================
@@ -220,12 +258,15 @@ print()
 if os.path.exists(args.input) and os.path.getsize(args.input) > 0:
     _MSA = AlignmentProfiler(args.input)
     print()
-    print()
-    print("# Loading complete on an alignment with", _MSA.NumSequences, "sequences, and", _MSA.NumSites, "sites")
+    print("# Loading complete on an alignment with", _MSA.NumSequences, "sequences, and", _MSA.NumCodonSites, "codon sites")
     print()
 else:
     print("# ERROR: the file is either empty or does not exist")
 #end if
+
+# =============================================================================
+# Report to user
+# =============================================================================
 
 print("#", "".join(["="]*78))
 print("# Reporting alignment statistics")
@@ -233,34 +274,37 @@ print("#", "".join(["="]*78))
 print()
 
 # Invariant Sites
-print("# The alignment has", _MSA.NumInvariantSites, "invariant sites", "(", (_MSA.NumInvariantSites / _MSA.NumSites) * 100, "% ) ")
+print("# The alignment has", _MSA.NumInvariantCodonSites, "invariant sites", "(", (_MSA.NumInvariantCodonSites / _MSA.NumCodonSites) * 100, "% ) ")
 
 # Gaps
-print("# The alignment has an average gappiness of", 0, "with a range of", 0, "to", 0)
+#print("# The alignment has an average gappiness of", 0, "with a range of", 0, "to", 0)
 
 # Nucleotide Frequencies
-# https://www.promega.com/resources/guides/nucleic-acid-analysis/restriction-enzyme-resource/restriction-enzyme-resource-tables/iupac-ambiguity-codes-for-nucleotide-degeneracy/
-print("# The alignment the following nucleotide frequencies")
+#https://www.promega.com/resources/guides/nucleic-acid-analysis/restriction-enzyme-resource/restriction-enzyme-resource-tables/iupac-ambiguity-codes-for-nucleotide-degeneracy/
+print("# The alignment the following nucleotide frequencies...")
 print()
 print(tabulate([
-    ['Adenine (A)',  0], 
-    ['Thymine (T)',  0], 
-    ['Guanine (G)',  0], 
-    ['Cytosine (C)', 0]], 
+    ['Adenine (A)',  _MSA.NTFrequencies["NucleotideFrequencies"]["A"]], 
+    ['Thymine (T)',  _MSA.NTFrequencies["NucleotideFrequencies"]["T"]], 
+    ['Guanine (G)',  _MSA.NTFrequencies["NucleotideFrequencies"]["G"]], 
+    ['Cytosine (C)', _MSA.NTFrequencies["NucleotideFrequencies"]["C"]],
+    ['Any Nucleotide (N)', _MSA.NTFrequencies["NucleotideFrequencies"]["N"]]], 
     headers=['Nucleotide', 'Frequency']))
 
 #GC Content
-print()
-print("# The alignment the following GC content (%):", 0)
+#print()
+#print("# The alignment the following GC content (%):", 
+#      (_MSA.NTFrequencies["NucleotideFrequencies"]["G"] + 
+#      _MSA.NTFrequencies["NucleotideFrequencies"]["C"]) * 100)
 
 # Codon Frequencies
-print()
-print("# The alignment the following Codon frequencies")
-print()
-print(tabulate([
-    ['ATG',  0]
-    ], 
-    headers=['Codon', 'Frequency']))
+#print()
+#print("# The alignment the following Codon frequencies")
+#print()
+#print(tabulate([
+#    ['ATG',  0]
+#    ], 
+#    headers=['Codon', 'Frequency']))
 
 # Search for ambiguous nucleotides
 # Or ambiguous codons
@@ -272,15 +316,18 @@ print(tabulate([
 # RSCU
 # Pairwise KaKs
 
+print()
+
 # =============================================================================
 # Output CSV
 # =============================================================================
 
+"""
 df = pd.DataFrame.from_dict(ResultsDict, orient='index')
 print()
 print("# Saving results to:", OutputCSV)
 df.to_csv(OutputCSV, index=False)
-
+"""
 
 
 
