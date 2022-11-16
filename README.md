@@ -7,7 +7,7 @@ A package to get summary statistics and diagnostics for a multiple sequence alig
 
 Example code 
 
-```python3 src/AlignmentProfiler/AlignmentProfiler.py --input data/Benchmark/adh.nex --output results/adh.nex.csv```
+```python3 profile.py --alignment data/Benchmark/adh.nex --output results/adh.nex.csv```
 
 Example output 
 

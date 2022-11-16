@@ -8,9 +8,11 @@ version = "0.0.7"
 authors = [
   { name="Alexander G Lucaci", email="aglucaci@gmail.com" },
 ]
+
 description = "A package to get summary statistics and diagnostics for a multiple sequence alignment"
 readme = "README.md"
 requires-python = ">=3.7"
+
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -20,3 +22,5 @@ classifiers = [
 [project.urls]
 "Homepage" = "https://github.com/aglucaci/AlignmentProfiler"
 "Bug Tracker" = "https://github.com/aglucaci/AlignmentProfiler/issues"
+
+repository = "https://github.com/aglucaci/AlignmentProfiler"
