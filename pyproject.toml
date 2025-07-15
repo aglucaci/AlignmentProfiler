@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "AlignmentProfiler"
-version = "1.0.0"
+version = "1.0.4"
 authors = [
   { name = "Alexander G Lucaci", email = "aglucaci@gmail.com" },
 ]
@@ -21,14 +21,20 @@ classifiers = [
 ]
 
 dependencies = [
-  "biopython>=1.79",
-  "numpy>=1.24.0",
   "pandas>=1.5.0",
-  "matplotlib>=3.5.0",
-  "scikit-learn>=1.1.0"
+  "numpy>=1.24.0",
+  "biopython>=1.85",
+  "matplotlib>=3.5",
+  "seaborn>=0.11",
+  "argparse; python_version<'3.10'",
+  "tqdm>=4.65.0",
+  "pytest"
 ]
 
 [project.urls]
 Homepage = "https://github.com/aglucaci/AlignmentProfiler"
-Bug Tracker = "https://github.com/aglucaci/AlignmentProfiler/issues"
+"Bug Tracker" = "https://github.com/aglucaci/AlignmentProfiler/issues"
 Repository = "https://github.com/aglucaci/AlignmentProfiler"
+
+ [project.scripts]
+ alignmentprofiler = "alignmentprofiler.cli:main"
